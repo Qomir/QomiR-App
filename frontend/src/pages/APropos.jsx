@@ -54,7 +54,7 @@ export const APropos = () => {
               À propos de QomiR App
             </h1>
             <p className="text-lg text-slate-400 animate-fade-in-up stagger-1">
-              La solution qui révolutionne l'expérience restaurant
+              La solution qui révolutionne l'expérience client
             </p>
           </div>
         </div>

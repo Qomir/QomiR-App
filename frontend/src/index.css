@@ -113,3 +113,32 @@ code {
         border-bottom-color: inherit;
     }
 }
+/* --- FOND LISIBLE POUR LE MENU MOBILE --- */
+#mobile-menu .mobile-menu-panel {
+  /* Fond quasi opaque (équiv. à bg-slate-900/95) */
+  background-color: rgba(15, 23, 42, 0.95) !important; /* !important pour battre un reset agressif */
+  border: 1px solid rgba(30, 41, 59, 0.7);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.35);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  border-radius: 0.75rem;
+}
+
+/* liens dans le menu : lisibles sur fond sombre */
+#mobile-menu .mobile-menu-panel a {
+  color: #e2e8f0; /* slate-200 */
+}
+#mobile-menu .mobile-menu-panel a:hover {
+  background-color: rgba(30, 41, 59, 0.7); /* slate-800/70 */
+  color: #ffffff;
+}
+
+/* optionnel : s'assurer que le backdrop couvre bien l'écran */
+.mobile-menu-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 40;
+}

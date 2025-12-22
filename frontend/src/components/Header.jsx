@@ -25,7 +25,7 @@ export const Header = () => {
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         isScrolled
-          ? 'bg-slate-950/95 backdrop-blur-lg shadow-lg border-b border-slate-800'
+          ? 'bg-slate-900 backdrop-blur-lg shadow-lg border-b border-slate-800'
           : 'bg-transparent'
       }`}
     >
@@ -77,31 +77,49 @@ export const Header = () => {
         </div>
 
         {/* Mobile Menu */}
-        {isMobileMenuOpen && (
-          <div className="md:hidden py-4 border-t border-slate-800">
-            <nav className="flex flex-col space-y-2">
-              {navItems.map((item) => (
-                <Link
-                  key={item.path}
-                  to={item.path}
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className={`px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
-                    location.pathname === item.path
-                      ? 'text-sky-400 bg-sky-400/10'
-                      : 'text-slate-300 hover:text-white hover:bg-slate-800/50'
-                  }`}
-                >
-                  {item.name}
-                </Link>
-              ))}
-              <Link to="/contact" onClick={() => setIsMobileMenuOpen(false)}>
-                <Button className="w-full bg-sky-500 hover:bg-sky-600 text-white font-medium mt-2">
-                  Démarrer
-                </Button>
-              </Link>
-            </nav>
-          </div>
-        )}
+       {isMobileMenuOpen && (
+  <>
+    {/* Backdrop plein écran */}
+    <div
+      className="mobile-menu-backdrop md:hidden"
+      onClick={() => setIsMobileMenuOpen(false)}
+      aria-hidden="true"
+    />
+
+    {/* Panneau du menu */}
+    <div
+      id="mobile-menu"
+      className="md:hidden py-4 border-t border-slate-800 relative z-50"
+      role="dialog"
+      aria-modal="true"
+    >
+      <nav className="mobile-menu-panel mx-3 p-3">
+        <div className="flex flex-col space-y-2">
+          {navItems.map((item) => (
+            <Link
+              key={item.path}
+              to={item.path}
+              onClick={() => setIsMobileMenuOpen(false)}
+              className={`px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
+                location.pathname === item.path
+                  ? 'text-sky-400 bg-sky-400/10'
+                  : 'hover:bg-slate-800/70'
+              }`}
+            >
+              {item.name}
+            </Link>
+          ))}
+          <Link to="/contact" onClick={() => setIsMobileMenuOpen(false)}>
+            <Button className="w-full bg-sky-500 hover:bg-sky-600 text-white font-medium mt-2">
+              Démarrer
+            </Button>
+          </Link>
+        </div>
+      </nav>
+    </div>
+  </>
+)}
+
       </div>
     </header>
   );

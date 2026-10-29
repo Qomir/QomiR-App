@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>QomiR Story</title>
+<style>
+  html,body{margin:0;background:#020617;overflow:hidden}
+  #stage{position:relative;width:1080px;height:1920px;overflow:hidden;font-family:"Inter",sans-serif;color:#fff;background:#020617;perspective:1800px}
+  .shot{position:absolute;inset:0;overflow:hidden;opacity:0;transform-origin:50% 50%;backface-visibility:hidden}
+  .shot img{position:absolute;max-width:none;will-change:transform}
+  .shot .tint{position:absolute;inset:0;background:linear-gradient(180deg,rgba(2,6,23,.55) 0%,rgba(2,6,23,0) 22%,rgba(2,6,23,0) 52%,rgba(2,6,23,.88) 80%,rgba(2,6,23,.96) 100%)}
+  #sweep{position:absolute;top:-20%;height:140%;width:420px;background:linear-gradient(90deg,rgba(56,189,248,0),rgba(56,189,248,.55),rgba(103,232,249,.95),rgba(56,189,248,.55),rgba(56,189,248,0));filter:blur(8px);transform:skewX(-14deg);opacity:0;mix-blend-mode:screen}
+  #hdr{position:absolute;top:96px;left:0;right:0;text-align:center;opacity:0}
+  #hdr img{height:104px;filter:drop-shadow(0 4px 20px rgba(0,0,0,.6))}
+  #cap{position:absolute;left:70px;right:70px;top:1440px;text-align:center}
+  .kick{display:inline-flex;align-items:center;gap:12px;padding:12px 28px;border-radius:999px;background:rgba(14,165,233,.16);border:2px solid rgba(56,189,248,.45);color:#7dd3fc;font-weight:700;font-size:32px;letter-spacing:.5px;backdrop-filter:blur(8px)}
+  .line{font-size:86px;font-weight:800;line-height:1.06;letter-spacing:-2px;margin-top:26px;text-shadow:0 6px 30px rgba(0,0,0,.5)}
+  .line .w{display:inline-block;white-space:pre}
+  .grad{background:linear-gradient(90deg,#38bdf8,#67e8f9);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .ov{position:absolute;opacity:0}
+  .glass{background:rgba(15,23,42,.82);border:2px solid rgba(56,189,248,.35);border-radius:36px;box-shadow:0 30px 90px rgba(0,0,0,.55),0 0 60px rgba(14,165,233,.18);backdrop-filter:blur(14px)}
+  /* scan brackets */
+  #scan{width:300px;height:300px}
+  #scan i{position:absolute;width:70px;height:70px;border:9px solid #38bdf8;filter:drop-shadow(0 0 14px #0ea5e9)}
+  #scan i:nth-child(1){left:0;top:0;border-right:0;border-bottom:0;border-radius:26px 0 0 0}
+  #scan i:nth-child(2){right:0;top:0;border-left:0;border-bottom:0;border-radius:0 26px 0 0}
+  #scan i:nth-child(3){left:0;bottom:0;border-right:0;border-top:0;border-radius:0 0 0 26px}
+  #scan i:nth-child(4){right:0;bottom:0;border-left:0;border-top:0;border-radius:0 0 26px 0}
+  #scan b{position:absolute;left:14px;right:14px;height:6px;border-radius:6px;background:#67e8f9;box-shadow:0 0 30px 8px rgba(103,232,249,.7)}
+  /* phone menu */
+  #menu{width:560px;padding:34px 30px 30px}
+  #menu .url{font-size:24px;color:#94a3b8;background:#1e293b;border-radius:999px;padding:10px 24px;text-align:center;font-weight:600}
+  #menu h3{margin:26px 4px 18px;font-size:50px;font-weight:800;display:flex;justify-content:space-between;align-items:baseline}
+  #menu h3 small{font-size:28px;color:#38bdf8;font-weight:700}
+  .it{display:flex;align-items:center;gap:20px;background:#1e293b;border-radius:24px;padding:16px 20px;margin-bottom:14px}
+  .it .th{width:76px;height:76px;border-radius:18px;background:linear-gradient(135deg,#38bdf8,#0ea5e9);flex:none;display:flex;align-items:center;justify-content:center;font-size:40px}
+  .it b{display:block;font-size:31px}
+  .it span{font-size:26px;color:#94a3b8}
+  .it .pl{margin-left:auto;width:50px;height:50px;border-radius:50%;background:#38bdf8;display:flex;align-items:center;justify-content:center;font-size:36px;font-weight:800}
+  .btn{margin-top:20px;background:#0ea5e9;border-radius:22px;text-align:center;padding:26px;font-size:36px;font-weight:800}
+  /* toast */
+  #toast{display:flex;align-items:center;gap:26px;padding:30px 40px;width:720px;box-sizing:border-box}
+  .chk{width:84px;height:84px;border-radius:50%;background:linear-gradient(135deg,#38bdf8,#06b6d4);display:flex;align-items:center;justify-content:center;flex:none;box-shadow:0 0 40px rgba(56,189,248,.6)}
+  #toast b{font-size:42px;display:block}
+  #toast span{font-size:30px;color:#94a3b8}
+  #ripple{width:220px;height:220px;border-radius:50%;border:8px solid #67e8f9;box-shadow:0 0 40px #38bdf8}
+  /* ticket */
+  #ticket{width:640px;padding:34px 38px}
+  #ticket .top{display:flex;justify-content:space-between;align-items:center;font-size:28px;color:#7dd3fc;font-weight:700;letter-spacing:1px}
+  #ticket .live{display:inline-flex;align-items:center;gap:10px}
+  #ticket .live:before{content:"";width:16px;height:16px;border-radius:50%;background:#22c55e;box-shadow:0 0 14px #22c55e}
+  #ticket h4{font-size:56px;margin:18px 0 20px;font-weight:800}
+  #ticket .row{display:flex;justify-content:space-between;font-size:34px;padding:14px 0;border-top:2px solid #1e293b;color:#e2e8f0}
+  #ticket .row b{color:#38bdf8}
+  /* stats */
+  #stats{display:flex;width:900px;padding:34px 0}
+  .st{flex:1;text-align:center}
+  .st b{display:block;font-size:80px;font-weight:800;color:#38bdf8}
+  .st small{font-size:28px;color:#94a3b8}
+  .sep{width:2px;background:#334155}
+  /* end card */
+  #end{position:absolute;inset:0;opacity:0;background:radial-gradient(120% 60% at 50% 35%,#0c4a6e 0%,#0f172a 45%,#020617 100%)}
+  #end .grid{position:absolute;inset:0;background-image:linear-gradient(rgba(56,189,248,.07) 2px,transparent 2px),linear-gradient(90deg,rgba(56,189,248,.07) 2px,transparent 2px);background-size:80px 80px}
+  #endIn{position:absolute;left:0;right:0;top:560px;text-align:center}
+  .cta{display:inline-flex;align-items:center;gap:20px;padding:36px 64px;border-radius:24px;background:#0ea5e9;font-size:50px;font-weight:700;box-shadow:0 20px 80px rgba(14,165,233,.55)}
+  #vig{position:absolute;inset:0;pointer-events:none;box-shadow:inset 0 0 220px rgba(0,0,0,.55)}
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="shots"></div>
+  <div id="sweep"></div>
+
+  <div id="scan" class="ov"><i></i><i></i><i></i><i></i><b></b></div>
+  <div id="menu" class="ov glass">
+    <div class="url">🔒 qomirapp.com/menu</div>
+    <h3>Menu <small>Table 12</small></h3>
+    <div class="it"><div class="th">🍕</div><div><b>Pizza Margherita</b><span>12,00 €</span></div><div class="pl">+</div></div>
+    <div class="it"><div class="th">🥗</div><div><b>Burrata & tomates</b><span>9,50 €</span></div><div class="pl">+</div></div>
+    <div class="it"><div class="th">🍰</div><div><b>Tiramisu maison</b><span>6,90 €</span></div><div class="pl">+</div></div>
+    <div class="it"><div class="th">🍋</div><div><b>Citronnade</b><span>4,50 €</span></div><div class="pl">+</div></div>
+    <div class="btn">Commander →</div>
+  </div>
+  <div id="ripple" class="ov"></div>
+  <div id="toast" class="ov glass"><div class="chk"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></div><div><b>Commande envoyée</b><span>Table 12 · en cuisine</span></div></div>
+  <div id="ticket" class="ov glass">
+    <div class="top"><span>NOUVELLE COMMANDE</span><span class="live">à l'instant</span></div>
+    <h4>Table 12</h4>
+    <div class="row"><span>Pizza Margherita</span><b>×1</b></div>
+    <div class="row"><span>Citronnade</span><b>×1</b></div>
+  </div>
+  <div id="stats" class="ov glass">
+    <div class="st"><b>30s</b><small>Mise en place</small></div><div class="sep"></div>
+    <div class="st"><b>0</b><small>Application</small></div><div class="sep"></div>
+    <div class="st"><b>100%</b><small>Digital</small></div>
+  </div>
+
+  <div id="end"><div class="grid"></div>
+    <div id="endIn">
+      <img src="logo_crop.png" style="height:210px">
+      <div style="font-size:84px;font-weight:800;letter-spacing:-2px;line-height:1.06;margin:70px 60px 0">Fluidifiez votre<br>restaurant avec <span class="grad">QomiR&nbsp;App</span></div>
+      <div style="font-size:40px;color:#cbd5e1;margin:36px 120px 0;line-height:1.35">Scannez, commandez, c'est servi.</div>
+      <div style="margin-top:80px"><span class="cta" id="cta">Demander une démo <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></span></div>
+      <div style="font-size:44px;color:#94a3b8;margin-top:50px;font-weight:600">qomirapp.com</div>
+    </div>
+  </div>
+
+  <div id="vig"></div>
+  <div id="hdr"><img src="logo_crop.png"></div>
+  <div id="cap"><div class="kick" id="kick"></div><div class="line" id="line"></div></div>
+</div>
+
+<script>
+const W = 1080, H = 1920;
+const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const lerp = (a, b, t) => a + (b - a) * t;
+const prog = (t, a, d) => clamp((t - a) / d);
+const eOut = x => 1 - Math.pow(1 - x, 3);
+const eIn = x => x * x * x;
+const eInOut = x => x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
+const eBack = x => { const c = 1.70158; return 1 + (c + 1) * Math.pow(x - 1, 3) + c * Math.pow(x - 1, 2); };
+
+// fx/fy: focal point (fraction of image) at start -> end; z: zoom start -> end; tr: entry transition
+const TR = .35, PACE = .8;
+const shots = [
+  { img: 'p12', d: 1.75, fx: [.70, .66], fy: .5, z: [1.0, 1.12], tr: 'fade', kick: 'Ce soir', cap: 'Un client <g>entre.</g>' },
+  { img: 'p2', d: 1.45, fx: [.42, .58], fy: .5, z: [1.08, 1.0], tr: 'sweep', kick: 'Pas d\'attente', cap: 'Il choisit <g>sa table.</g>' },
+  { img: 'p13', d: 1.55, fx: [.56, .6], fy: .55, z: [1.0, 1.1], tr: 'push', kick: 'Sur chaque table', cap: 'Un <g>QR code.</g>' },
+  { img: 'p11', d: 1.7, fx: [.46, .43], fy: .74, z: [1.3, 1.45], tr: 'zoom', kick: 'Sans application', cap: 'Il <g>scanne.</g>' },
+  { img: 'p6', d: 1.75, fx: [.48, .52], fy: .55, z: [1.0, 1.08], tr: 'sweep', kick: 'Menu digital', cap: 'Le menu <g>s\'ouvre.</g>' },
+  { img: 'p10', d: 1.55, fx: [.38, .42], fy: .55, z: [1.0, 1.12], tr: 'zoom', kick: 'En 1 clic', cap: 'Il <g>commande.</g>' },
+  { img: 'p9', d: 1.7, fx: [.5, .5], fy: .45, z: [1.12, 1.0], tr: 'push', kick: 'En temps réel', cap: 'Reçue <g>en cuisine.</g>' },
+  { img: 'p4', d: 1.3, fx: [.35, .62], fy: .5, z: [1.0, 1.0], tr: 'sweep', kick: 'Cuisine & bar', cap: 'Tout est <g>synchro.</g>' },
+  { img: 'p8', d: 1.45, fx: [.3, .5], fy: .5, z: [1.05, 1.0], tr: 'zoom', kick: 'Gain de temps', cap: 'L\'équipe se concentre <g>sur la qualité.</g>' },
+  { img: 'p1', d: 1.35, fx: [.42, .42], fy: .5, z: [1.0, 1.1], tr: 'push', kick: 'Zéro erreur', cap: 'Chaque commande <g>est juste.</g>' },
+  { img: 'p7', d: 1.4, fx: [.5, .58], fy: .5, z: [1.08, 1.0], tr: 'sweep', kick: 'Service ultra-rapide', cap: 'Prêt, <g>envoyé.</g>' },
+  { img: 'p5', d: 1.75, fx: [.48, .56], fy: .5, z: [1.0, 1.1], tr: 'zoom', kick: 'Expérience client', cap: 'Servi <g>plus vite.</g>' },
+  { img: 'p3', d: 2.0, fx: [.4, .4], fy: .42, z: [1.0, 1.08], tr: 'push', kick: 'Augmentez votre CA', cap: 'Des clients <g>qui reviennent.</g>' },
+];
+let t0 = 0;
+shots.forEach((s, i) => { s.d *= PACE; s.start = t0; s.end = t0 + s.d + TR; t0 += s.d; });
+const END0 = shots.at(-1).start + shots.at(-1).d, TOTAL = END0 + 3.0;
+window.TOTAL = TOTAL;
+
+const wrap = document.getElementById('shots');
+shots.forEach((s, i) => {
+  const el = document.createElement('div'); el.className = 'shot'; el.style.zIndex = i;
+  const im = document.createElement('img'); im.src = `img/${s.img}.jpg`; el.appendChild(im);
+  const tn = document.createElement('div'); tn.className = 'tint'; el.appendChild(tn);
+  wrap.appendChild(el); s.el = el; s.im = im;
+});
+
+const $ = id => document.getElementById(id);
+const sweep = $('sweep');
+function place(s, lt) {
+  const p = eInOut(clamp(lt / (s.d + TR)));
+  const im = s.im, ar = im.naturalWidth / im.naturalHeight;
+  let h = H * lerp(s.z[0], s.z[1], p), w = h * ar;
+  if (w < W) { w = W * lerp(s.z[0], s.z[1], p); h = w / ar; }
+  const fx = lerp(s.fx[0], s.fx[1], p);
+  const x = clamp(W / 2 - fx * w, W - w, 0), y = clamp(H / 2 - s.fy * h, H - h, 0);
+  im.style.width = w + 'px'; im.style.height = h + 'px'; im.style.transform = `translate(${x}px,${y}px)`;
+  return { x, y, w, h };
+}
+function show(el, o, tf = '') { el.style.opacity = o; el.style.transform = tf; }
+
+let curCap = -1;
+function setCaption(i) {
+  const s = shots[i];
+  $('kick').textContent = s.kick;
+  $('line').innerHTML = s.cap.replace(/<g>(.*?)<\/g>/g, (_, m) => `<g>${m}</g>`)
+    .split(/(<g>.*?<\/g>)/).map(part => {
+      const g = part.startsWith('<g>'); const txt = part.replace(/<\/?g>/g, '');
+      return txt.split(/(\s+)/).filter(x => x.length).map(wd => /^\s+$/.test(wd) ? ' ' : `<span class="w${g ? ' grad' : ''}">${wd}</span>`).join('');
+    }).join('');
+}
+
+window.setTime = function (t) {
+  // shots
+  shots.forEach((s, i) => {
+    const lt = t - s.start;
+    const on = t >= s.start && t < s.end + .02 && t < END0 + .6;
+    s.el.style.visibility = on ? 'visible' : 'hidden'; if (!on) return;
+    place(s, lt);
+    const ip = i === 0 ? 1 : clamp(lt / TR), e = eOut(ip);
+    let tf = '', o = 1, clip = 'none';
+    if (s.tr === 'fade' || i === 0) { o = i === 0 ? prog(t, 0, .4) : e; }
+    else if (s.tr === 'zoom') { o = e; tf = `scale(${lerp(1.35, 1, e)})`; s.el.style.filter = `blur(${(1 - e) * 14}px)`; }
+    else if (s.tr === 'sweep') { const x = lerp(115, -15, eInOut(ip)); clip = `polygon(${x}% 0,115% 0,115% 100%,${x - 15}% 100%)`; }
+    else if (s.tr === 'push') { tf = `translateX(${(1 - e) * 100}%) rotateY(${(1 - e) * -35}deg)`; }
+    if (s.tr !== 'zoom') s.el.style.filter = 'none';
+    // outgoing push: previous shot pushed left in 3D
+    const nx = shots[i + 1];
+    if (nx && nx.tr === 'push' && t > nx.start) { const q = eOut(clamp((t - nx.start) / TR)); tf = `translateX(${-q * 60}%) rotateY(${q * 35}deg)`; o = 1 - q * .6; }
+    if (nx && nx.tr === 'zoom' && t > nx.start) { const q = eIn(clamp((t - nx.start) / TR)); tf = `scale(${1 + q * .25})`; }
+    s.el.style.opacity = o; s.el.style.transform = tf; s.el.style.clipPath = clip;
+  });
+  // light sweep bar on sweep transitions
+  const sw = shots.find(s => s.tr === 'sweep' && t >= s.start && t < s.start + TR);
+  if (sw) { const ip = eInOut(clamp((t - sw.start) / TR)); sweep.style.opacity = Math.sin(ip * Math.PI); sweep.style.left = lerp(1240, -560, ip) + 'px'; } else sweep.style.opacity = 0;
+
+  // captions
+  const ci = shots.findIndex(s => t >= s.start + .15 && t < s.start + s.d + .15);
+  const capEl = $('cap');
+  if (ci >= 0 && t < END0) {
+    const s = shots[ci];
+    if (ci !== curCap) { curCap = ci; setCaption(ci); }
+    const a = s.start + .15, outp = eIn(prog(t, s.start + s.d - .05, .2));
+    $('kick').style.opacity = eOut(prog(t, a, .3)) * (1 - outp);
+    $('kick').style.transform = `translateY(${(1 - eOut(prog(t, a, .3))) * 20}px)`;
+    [...$('line').querySelectorAll('.w')].forEach((w, k) => {
+      const p = eOut(prog(t, a + .08 + k * .06, .35));
+      w.style.opacity = p * (1 - outp); w.style.transform = `translateY(${(1 - p) * 50 - outp * 30}px)`;
+    });
+    capEl.style.opacity = 1;
+  } else { capEl.style.opacity = 0; curCap = -1; }
+  const hv = prog(t, .5, .5) * (1 - prog(t, END0 - .2, .3)); $('hdr').style.opacity = hv;
+
+  // overlays
+  const S = n => shots[n];
+  // scan brackets on the QR (shot 4, image p11): QR at (0.40,0.78) of the image
+  {
+    const s = S(3), lt = t - s.start, v = clamp(lt / .3) * (1 - prog(t, s.start + s.d, .25));
+    if (v > 0) {
+      const g = place(s, lt); const qx = g.x + .40 * g.w, qy = g.y + .738 * g.h;
+      const sc = lerp(1.6, 1, eBack(prog(t, s.start + .1, .45)));
+      const el = $('scan'); show(el, v, `translate(${qx - 150}px,${qy - 150}px) scale(${sc * g.h / 1920 * 1.0})`);
+      el.style.left = 0; el.style.top = 0;
+      el.querySelector('b').style.top = (20 + 260 * (.5 - .5 * Math.cos((lt - .3) * 5))) + 'px';
+    } else $('scan').style.opacity = 0;
+  }
+  // phone menu card (shot 5)
+  {
+    const s = S(4), p = eBack(prog(t, s.start + .3, .5)), out = eIn(prog(t, s.start + s.d - .05, .3));
+    show($('menu'), clamp(p) * (1 - out), `translate(${lerp(1100, 470, p) + out * 600}px,${380}px) rotateY(${(1 - p) * -40 - 12}deg) rotateX(4deg)`);
+    $('menu').style.left = 0; $('menu').style.top = 0;
+    [...$('menu').querySelectorAll('.it')].forEach((it, k) => { const q = eOut(prog(t, s.start + .5 + k * .1, .3)); it.style.opacity = q; it.style.transform = `translateX(${(1 - q) * 60}px)`; });
+  }
+  // tap ripple + toast (shot 6)
+  {
+    const s = S(5), lt = t - s.start;
+    const rp = prog(t, s.start + .35, .55);
+    show($('ripple'), rp > 0 && rp < 1 ? (1 - rp) : 0, `translate(${400 - 110}px,${1000 - 110}px) scale(${.3 + rp * 1.4})`);
+    $('ripple').style.left = 0; $('ripple').style.top = 0;
+    const p = eBack(prog(t, s.start + .55, .45)), out = eIn(prog(t, s.start + s.d + .1, .3));
+    show($('toast'), clamp(p) * (1 - out), `translate(180px,${lerp(120, 300, p) - out * 80}px) scale(${.8 + .2 * clamp(p)})`);
+    $('toast').style.left = 0; $('toast').style.top = 0;
+  }
+  // kitchen ticket (shot 7)
+  {
+    const s = S(6), p = eBack(prog(t, s.start + .35, .5)), out = eIn(prog(t, s.start + s.d + .05, .3));
+    show($('ticket'), clamp(p) * (1 - out), `translate(${lerp(-700, 220, p) - out * 700}px,700px) rotateY(${(1 - p) * 40 + 8}deg) rotateZ(-2deg)`);
+    $('ticket').style.left = 0; $('ticket').style.top = 0;
+  }
+  // stats (last shot)
+  {
+    const s = S(12), p = eBack(prog(t, s.start + .55, .5)), out = eIn(prog(t, END0 - .1, .3));
+    show($('stats'), clamp(p) * (1 - out), `translate(90px,${lerp(1300, 1140, p)}px) scale(${.85 + .15 * clamp(p)})`);
+    $('stats').style.left = 0; $('stats').style.top = 0;
+  }
+  // end card
+  {
+    const p = eOut(prog(t, END0 - .1, .55));
+    $('end').style.opacity = p; $('end').style.zIndex = 50;
+    $('end').style.clipPath = `circle(${p * 120}% at 50% 60%)`;
+    const ein = $('endIn');
+    [...ein.children].forEach((c, k) => { const q = eOut(prog(t, END0 + .2 + k * .14, .45)); c.style.opacity = q; c.style.transform = `translateY(${(1 - q) * 60}px)`; });
+    const cp = t > END0 + 1.3 ? 1 + Math.sin((t - END0 - 1.3) * 5) * .025 : 1; $('cta').style.transform = `scale(${cp})`;
+  }
+  $('vig').style.zIndex = 60; $('hdr').style.zIndex = 61; capEl.style.zIndex = 61;
+  ['scan', 'menu', 'ripple', 'toast', 'ticket', 'stats'].forEach(id => $(id).style.zIndex = 40);
+  sweep.style.zIndex = 45;
+  // global fades
+  $('stage').style.filter = `brightness(${Math.min(prog(t, 0, .3), 1 - prog(t, TOTAL - .35, .35))})`;
+};
+Promise.all([document.fonts.ready, ...shots.map(s => s.im.decode())]).then(() => {
+  window.ready = true;
+  window.setTime(parseFloat(new URLSearchParams(location.search).get('t') || '0'));
+});
+</script>
+</body>
+</html>

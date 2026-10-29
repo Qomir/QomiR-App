@@ -1,6 +1,6 @@
 # Vidéo motion design QomiR (9:16)
 
-- `QomiR_motion_9x16.mp4` : 1080×1920, 30 fps, 19 s, avec musique synthétisée
+- `QomiR_motion_9x16.mp4` : 1080×1920, 30 fps, 17,5 s, avec musique synthétisée
 - `QomiR_motion_9x16_sans_son.mp4` : même vidéo, sans piste audio
 
 ## Régénérer

@@ -48,3 +48,12 @@ Services cités sur la carte de fin : commande par QR code, sans application, me
 - `tv_video_muet.mp4` : image du spot TV sans le son
 - `synth_audio.py` → `audio/` : musique et bruitages (générés, sans échantillon externe)
 - `mix.sh` : mixage final (voix + musique + bruitages, normalisation), lancé dans le bac à sable Higgsfield
+
+## Versions finales (mixées, bibliothèque Higgsfield)
+
+| Fichier | Usage | Lien |
+|---|---|---|
+| Spot radio, web/réseaux (−16 LUFS, MP3) | écoute, réseaux sociaux | https://d2ol7oe51mr4n9.cloudfront.net/user_3LL6DgBBOWkStQrbtoxyyrV5WOT/01bab40b-c957-48c2-9b01-711120e0f575.mp3 |
+| Spot radio, diffusion (−23 LUFS EBU R128, MP3 320k) | régie radio | https://d2ol7oe51mr4n9.cloudfront.net/user_3LL6DgBBOWkStQrbtoxyyrV5WOT/8f2c52ea-2d70-44d3-bd6c-e4373dc3a1ec.mp3 |
+| Spot TV, web/réseaux (−16 LUFS) | YouTube, réseaux, site | https://d2ol7oe51mr4n9.cloudfront.net/user_3LL6DgBBOWkStQrbtoxyyrV5WOT/bbfeb1ee-888b-4064-acb9-a458274f0318.mp4 |
+| Spot TV, diffusion (−23 LUFS EBU R128) | régie TV | https://d2ol7oe51mr4n9.cloudfront.net/user_3LL6DgBBOWkStQrbtoxyyrV5WOT/96ecc23b-1666-4f8f-979d-77a71fa165aa.mp4 |

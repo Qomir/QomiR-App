@@ -12,7 +12,7 @@ dur() { ffprobe -v error -show_entries format=duration -of csv=p=0 "$1"; }
 
 # ---- voices: cap long pauses, light EQ/compression ----
 VOICE_FX="highpass=f=80,acompressor=threshold=-20dB:ratio=3:attack=5:release=120:makeup=2,equalizer=f=3500:t=q:w=1:g=2,loudnorm=I=-16:TP=-1.5:LRA=7"
-ffmpeg -loglevel error -y -i client.mp3 -af "silenceremove=stop_periods=-1:stop_duration=0.2:stop_threshold=-30dB:stop_silence=0.15,atempo=1.1,$VOICE_FX,aresample=44100" -ac 2 work/client.wav
+ffmpeg -loglevel error -y -i client.mp3 -af "silenceremove=stop_periods=-1:stop_duration=0.2:stop_threshold=-30dB:stop_silence=0.15,atempo=1.15,$VOICE_FX,aresample=44100" -ac 2 work/client.wav
 ffmpeg -loglevel error -y -i vo_radio.mp3 -af "silenceremove=stop_periods=-1:stop_duration=0.45:stop_threshold=-40dB:stop_silence=0.3,atempo=1.1,$VOICE_FX,aresample=44100" -ac 2 work/vo_radio.wav
 ffmpeg -loglevel error -y -i vo_tv.mp3 -af "$VOICE_FX,aresample=44100" -ac 2 work/vo_tv.wav
 
@@ -23,16 +23,16 @@ m = WhisperModel("small", compute_type="int8")
 segs, _ = m.transcribe("work/vo_radio.wav", language="fr", word_timestamps=True)
 words = [w for s in segs for w in s.words]
 tap = next((w.end for w in words if "application" in w.word.lower()), 9.0)
-ding = next((w.start for w in words if w.word.strip().lower().startswith("arrive")), 10.0)
+ding = next((w.end for w in words if "cuisine" in w.word.lower()), 10.0)
 print(f"{tap:.2f} {ding:.2f}")
 EOF
 )
 
 # ---- radio ----
 C_END=$(dur work/client.wav)
-VO_AT=$(python3 -c "print(round(0.3 + $C_END + 0.1, 2))")
+VO_AT=$(python3 -c "print(round(0.15 + $C_END, 2))")
 VO_END=$(python3 -c "print(round($VO_AT + $(dur work/vo_radio.wav), 2))")
-RADIO_LEN=$(python3 -c "print(round($VO_END + 0.9, 2))")
+RADIO_LEN=$(python3 -c "print(round($VO_END + 0.45, 2))")
 MUSIC_AT=$(python3 -c "print(round($VO_AT - 0.9, 2))")
 # music written to end (final chord) right after the last word
 python3 synth_audio.py audio "$(python3 -c "print($RADIO_LEN - $MUSIC_AT)")" >/dev/null
@@ -41,13 +41,13 @@ ffmpeg -loglevel error -y \
   -i audio/amb.wav -i work/client.wav -i work/vo_radio.wav -i audio/music_radio.wav -i audio/tap.wav -i audio/ding.wav \
   -filter_complex "
     [0]volume=0.3,afade=t=out:st=$(python3 -c "print($VO_AT-0.6)"):d=1.4[amb];
-    [1]adelay=300|300,volume=1.0[cli];
+    [1]adelay=150|150,volume=1.0[cli];
     [2]adelay=$(ms $VO_AT)|$(ms $VO_AT)[vo];
     [vo]asplit=2[vo1][vosc0];[vosc0]apad[vosc];
     [3]adelay=$(ms $MUSIC_AT)|$(ms $MUSIC_AT),volume=0.34[mus];
     [mus][vosc]sidechaincompress=threshold=0.05:ratio=5:attack=30:release=450:makeup=1[musd];
     [4]adelay=$(ms "$VO_AT+$T_TAP")|$(ms "$VO_AT+$T_TAP"),volume=0.35[tap];
-    [5]adelay=$(ms "$VO_AT+$T_DING-0.15")|$(ms "$VO_AT+$T_DING-0.15"),volume=0.28[ding];
+    [5]adelay=$(ms "$VO_AT+$T_DING")|$(ms "$VO_AT+$T_DING"),volume=0.22[ding];
     [amb][cli][vo1][musd][tap][ding]amix=inputs=6:normalize=0:duration=longest,atrim=0:$RADIO_LEN,afade=t=out:st=$(python3 -c "print($RADIO_LEN-0.5)"):d=0.5[mix]" \
   -map "[mix]" -t "$RADIO_LEN" -c:a pcm_s24le work/radio_mix.wav
 

@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Final mix of the QomiR radio and TV spots.
 # Expects in the current directory: client.mp3, vo_radio.mp3, vo_tv.mp3 (voice-overs),
-# audio/{music_radio,music_tv,amb,ding,tap,whoosh}.wav (from synth_audio.py), tv_video_muet.mp4.
+# synth_audio.py and audio/{music_tv,amb,ding,tap,whoosh}.wav, tv_video_muet.mp4.
+# music_radio.wav is re-synthesised here to fit the voice length.
 # Writes out/radio_web.mp3 (-16 LUFS), out/radio_broadcast.wav (-23 LUFS, EBU R128),
 # out/tv_web.mp4 (-16 LUFS) and out/tv_broadcast.mp4 (-23 LUFS).
 set -euo pipefail
@@ -11,8 +12,8 @@ dur() { ffprobe -v error -show_entries format=duration -of csv=p=0 "$1"; }
 
 # ---- voices: cap long pauses, light EQ/compression ----
 VOICE_FX="highpass=f=80,acompressor=threshold=-20dB:ratio=3:attack=5:release=120,equalizer=f=3500:t=q:w=1:g=2"
-ffmpeg -loglevel error -y -i client.mp3 -af "silenceremove=stop_periods=-1:stop_duration=0.3:stop_threshold=-45dB:stop_silence=0.22,$VOICE_FX,aresample=44100" -ac 2 work/client.wav
-ffmpeg -loglevel error -y -i vo_radio.mp3 -af "silenceremove=stop_periods=-1:stop_duration=0.45:stop_threshold=-45dB:stop_silence=0.35,atempo=1.04,$VOICE_FX,aresample=44100" -ac 2 work/vo_radio.wav
+ffmpeg -loglevel error -y -i client.mp3 -af "silenceremove=stop_periods=-1:stop_duration=0.2:stop_threshold=-38dB:stop_silence=0.15,atempo=1.1,$VOICE_FX,aresample=44100" -ac 2 work/client.wav
+ffmpeg -loglevel error -y -i vo_radio.mp3 -af "silenceremove=stop_periods=-1:stop_duration=0.45:stop_threshold=-40dB:stop_silence=0.3,atempo=1.1,$VOICE_FX,aresample=44100" -ac 2 work/vo_radio.wav
 ffmpeg -loglevel error -y -i vo_tv.mp3 -af "$VOICE_FX,aresample=44100" -ac 2 work/vo_tv.wav
 
 # word timings of the processed radio VO, to place the sound effects
@@ -29,21 +30,25 @@ EOF
 
 # ---- radio ----
 C_END=$(dur work/client.wav)
-VO_AT=$(python3 -c "print(round(0.35 + $C_END + 0.15, 2))")
+VO_AT=$(python3 -c "print(round(0.3 + $C_END + 0.1, 2))")
+VO_END=$(python3 -c "print(round($VO_AT + $(dur work/vo_radio.wav), 2))")
+RADIO_LEN=$(python3 -c "print(round($VO_END + 0.9, 2))")
 MUSIC_AT=$(python3 -c "print(round($VO_AT - 0.9, 2))")
+# music written to end (final chord) right after the last word
+python3 synth_audio.py audio "$(python3 -c "print($RADIO_LEN - $MUSIC_AT)")" >/dev/null
 ms() { python3 -c "print(int(round(($1)*1000)))"; }
 ffmpeg -loglevel error -y \
   -i audio/amb.wav -i work/client.wav -i work/vo_radio.wav -i audio/music_radio.wav -i audio/tap.wav -i audio/ding.wav \
   -filter_complex "
     [0]volume=0.55,afade=t=out:st=$(python3 -c "print($VO_AT-0.6)"):d=1.4[amb];
-    [1]adelay=350|350,volume=1.0[cli];
+    [1]adelay=300|300,volume=1.0[cli];
     [2]adelay=$(ms $VO_AT)|$(ms $VO_AT)[vo];
     [vo]asplit=2[vo1][vosc];
     [3]adelay=$(ms $MUSIC_AT)|$(ms $MUSIC_AT),volume=0.9[mus];
     [mus][vosc]sidechaincompress=threshold=0.02:ratio=9:attack=30:release=500:makeup=1[musd];
     [4]adelay=$(ms "$VO_AT+$T_TAP")|$(ms "$VO_AT+$T_TAP"),volume=0.35[tap];
     [5]adelay=$(ms "$VO_AT+$T_DING-0.15")|$(ms "$VO_AT+$T_DING-0.15"),volume=0.28[ding];
-    [amb][cli][vo1][musd][tap][ding]amix=inputs=6:normalize=0:duration=longest,atrim=0:31,afade=t=out:st=30.2:d=0.8[mix]" \
+    [amb][cli][vo1][musd][tap][ding]amix=inputs=6:normalize=0:duration=longest,atrim=0:$RADIO_LEN,afade=t=out:st=$(python3 -c "print($RADIO_LEN-0.5)"):d=0.5[mix]" \
   -map "[mix]" -c:a pcm_s24le work/radio_mix.wav
 
 ffmpeg -loglevel error -y -i work/radio_mix.wav -af loudnorm=I=-16:TP=-1.0:LRA=9 -ar 44100 -c:a libmp3lame -b:a 256k out/radio_web.mp3
@@ -75,4 +80,4 @@ ffmpeg -loglevel error -y -i tv_video_muet.mp4 -i work/tv_mix.wav -map 0:v -map 
 fi
 
 for f in out/*; do echo "$f $(dur "$f")"; done
-echo "radio: vo_at=$VO_AT tap=$T_TAP ding=$T_DING"
+echo "radio: vo_at=$VO_AT vo_end=$VO_END len=$RADIO_LEN tap=$T_TAP ding=$T_DING"

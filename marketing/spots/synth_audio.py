@@ -1,6 +1,6 @@
 """Synthesise the music bed and sound effects for the QomiR radio/TV spots.
 
-Usage: python3 synth_audio.py OUT_DIR
+Usage: python3 synth_audio.py OUT_DIR [RADIO_MUSIC_SECONDS]
 Writes music_radio.wav, music_tv.wav, amb.wav, ding.wav, tap.wav, whoosh.wav (44.1 kHz).
 Deterministic (fixed seed), no external samples.
 """
@@ -199,7 +199,8 @@ def whoosh(dur=0.7):
 if __name__ == "__main__":
     out = Path(sys.argv[1] if len(sys.argv) > 1 else ".")
     out.mkdir(parents=True, exist_ok=True)
-    write(out / "music_radio.wav", music(31.0))
+    radio_len = float(sys.argv[2]) if len(sys.argv) > 2 else 31.0
+    write(out / "music_radio.wav", music(radio_len))
     write(out / "music_tv.wav", music(30.0))
     write(out / "amb.wav", ambience())
     write(out / "ding.wav", ding())

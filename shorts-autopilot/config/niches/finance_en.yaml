@@ -1,0 +1,47 @@
+# Niche n°3 : finances personnelles (éducation), en anglais, audience US.
+# RPM le plus élevé MAIS risque le plus élevé : YouTube cible depuis 2026 les « personas IA
+# synthétiques » sur la finance et la santé. À n'utiliser qu'avec validation humaine obligatoire.
+label: "personal finance education"
+language: en
+language_name: English
+tts_lang: en-us
+voices: [am_michael]
+audience: "US adults 22-40 who want to understand everyday money decisions"
+angle: "Explain one everyday money concept or piece of consumer-finance news in plain words. Education only: how it works, what to check, what questions to ask. Never tell the viewer what to buy or promise any outcome."
+cta: "Follow to understand your money a little better every day."
+
+timezone: America/New_York
+slots: ["07:10", "12:00", "17:30", "20:20"]
+trends_geo: US
+
+rss_feeds:
+  - https://www.cnbc.com/id/21324812/device/rss/rss.html
+  - https://www.nerdwallet.com/blog/feed/
+  - https://feeds.bbci.co.uk/news/business/rss.xml
+  - https://www.consumerfinance.gov/about-us/blog/feed/
+subreddits: []
+
+categories:
+  saving: [saving, savings, budget, "emergency fund", "high-yield", inflation]
+  credit: ["credit card", "credit score", debt, loan, interest, "buy now pay later", mortgage]
+  taxes: [tax, irs, refund, deduction, "401(k)", ira, retirement]
+  consumer: [fee, subscription, scam, refund, insurance, bank]
+banned_keywords: [crypto, bitcoin, memecoin, "penny stock", forex, "get rich", lawsuit, dies, war, election, casino, betting]
+
+evergreen_topics:
+  credit: ["How a credit card grace period works", "What APR actually means"]
+  saving: ["How compound interest works", "What an emergency fund is for"]
+  consumer: ["How to read a bank fee schedule"]
+
+formats: [news_explainer, myth_fact, how_to, deep_fact]
+fallback_visuals: ["person budgeting notebook", "coins jar savings", "credit card payment", "calculator desk", "family kitchen table"]
+forbidden_phrases: ["guaranteed", "risk-free", "get rich", "you should buy", "you should invest", "passive income", "financial freedom", "can't lose", "double your"]
+
+base_hashtags: [personalfinance, moneytips, financialliteracy]
+youtube_category_id: 27
+source_label: "Source:"
+ai_notice: "Made with AI assistance (synthetic voice, automated editing). Facts checked against the source above."
+disclaimer: "Educational content only, not financial advice. Consider your own situation or a licensed professional."
+
+overrides:
+  approval: {mode: required}      # validation humaine imposée pour cette niche

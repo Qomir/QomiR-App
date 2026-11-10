@@ -1,0 +1,103 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Configuration générale. Les secrets (clés API, tokens) vont dans .env, jamais ici.
+# Chaque section peut être surchargée par une niche (clé `overrides:` du fichier niche).
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Niche active = nom d'un fichier de config/niches/ (sans .yaml). Surchargée par NICHE dans .env.
+niche: tech_ai_en
+
+# "test" : génère dans output/review/ SANS rien publier (à garder pour vos 10 premières vidéos).
+# "live" : publie réellement. Surchargé par MODE dans .env.
+mode: test
+
+llm:
+  # Ordre d'essai. Gemini (palier gratuit) est rapide ; Ollama (local) est illimité mais lent sur CPU.
+  providers: [gemini, ollama]
+  # Alias « dernier modèle Flash-Lite » : le plus généreux du palier gratuit. Vos limites réelles
+  # sont affichées dans Google AI Studio (elles changent souvent). Besoin : ~3 appels par vidéo.
+  gemini_model: gemini-flash-lite-latest
+  ollama_model: qwen2.5:7b        # ~5 Go de RAM ; sur un petit PC essayez llama3.2:3b
+
+topics:
+  max_age_hours: 48               # on ignore les actus plus vieilles
+  dedupe_days: 45                 # pas deux vidéos sur le même sujet d'actu en 45 jours
+  dedupe_threshold: 0.6           # 0..1 : part de mots communs dans le titre pour parler de doublon
+  evergreen_dedupe_days: 120
+  evergreen_ratio: 0.3            # part de sujets intemporels (le reste suit l'actualité)
+  try_top: 4                      # nombre de sujets essayés avant d'abandonner un créneau
+
+script:
+  min_words: 125                  # ≈ 47 s à vitesse 1.0
+  max_words: 175                  # ≈ 68 s. (TikTok Creator Rewards exige > 60 s : montez min_words à 165)
+  max_attempts: 3                 # réécritures si le script échoue aux contrôles
+  fact_check: true                # 2e passe LLM de vérification contre la source — à laisser activé
+
+tts:
+  engine: kokoro                  # kokoro (meilleure qualité) ou piper (plus léger)
+  speed: 1.05
+  gap_seconds: 0.12               # respiration entre deux segments
+
+subtitles:
+  use_whisper: true               # timing mot par mot réel ; false = estimation proportionnelle
+  whisper_model: base             # tiny | base | small (small = plus précis, ~2x plus lent)
+
+broll:
+  reuse_days: 30                  # un même clip n'est pas réutilisé avant 30 jours
+  shuffle_providers: true         # alterne Pexels / Pixabay
+
+music:
+  enabled: true                   # joue un morceau au hasard de assets/music/ (dossier vide = pas de musique)
+  volume: 0.10                    # bas volume + ducking automatique sous la voix
+
+render:
+  templates: [bold_center, clean_lower, docu, one_word]   # voir autopilot/templates.py
+  tail_seconds: 0.6
+
+qc:
+  min_seconds: 30
+  max_seconds: 75
+  min_mean_volume_db: -30
+  max_silence_seconds: 2.0
+  min_whisper_match: 0.8          # < 80 % de mots reconnus = voix et sous-titres désynchronisés
+  max_size_mb: 250
+
+schedule:
+  posts_per_day: 3                # 2 à 4. Les créneaux candidats sont dans le fichier de niche.
+  lead_minutes: 50                # la vidéo est fabriquée X min avant son créneau
+  jitter_minutes: 8               # petite variation aléatoire de l'heure de publication
+  stats_time: "04:30"             # collecte des stats + apprentissage (heure du fuseau de la niche)
+  report_time: "22:30"            # bilan quotidien Telegram
+
+approval:
+  # off      : 100 % autonome.
+  # veto     : la vidéo vous est envoyée sur Telegram ; publiée à l'heure prévue sauf si vous cliquez « Rejeter ».
+  # required : rien n'est publié sans votre clic « Publier » (recommandé pour une niche finance).
+  mode: veto
+
+platforms:
+  youtube:
+    enabled: true
+    privacy: public               # public | unlisted | private
+  tiktok:
+    enabled: false                # à activer une fois l'app TikTok auditée (voir README §7)
+    # direct : publication directe (privée tant que l'app n'est pas auditée).
+    # inbox  : envoi en brouillon dans l'app TikTok, vous appuyez sur « Publier » (pas d'audit requis).
+    mode: inbox
+    privacy: PUBLIC_TO_EVERYONE   # ramené à SELF_ONLY automatiquement si le compte/app ne l'autorise pas
+  instagram:
+    enabled: true
+    api_version: v24.0
+    share_to_feed: true
+
+ai_disclosure:
+  youtube_synthetic_flag: true    # status.containsSyntheticMedia (« contenu modifié ou synthétique »)
+  tiktok_aigc_flag: true          # post_info.is_aigc (« Creator labeled as AI-generated »)
+  instagram_ai_flag: true         # is_ai_generated (étiquette « AI info »)
+  caption_notice: true            # ajoute aussi la phrase `ai_notice` de la niche en légende
+
+learning:
+  enabled: true
+  explore_rate: 0.2               # 20 % de tirages au hasard : garde de la variété et teste du neuf
+  window_videos: 60               # apprend sur les 60 dernières vidéos
+  track_days: 14                  # met à jour les stats d'une vidéo pendant 14 jours
+  weights: {views: 0.55, retention: 0.35, shares: 0.10}

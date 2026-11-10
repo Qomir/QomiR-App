@@ -1,0 +1,23 @@
+services:
+  autopilot:
+    build: .
+    restart: unless-stopped          # redémarrage automatique (plantage, reboot du serveur)
+    env_file: .env                   # secrets : jamais versionnés
+    volumes:
+      - ./data:/app/data             # base SQLite, jetons OAuth, logs, modèles, cache B-roll
+      - ./output:/app/output         # vidéos générées (output/review en mode test)
+      - ./config:/app/config:ro      # modifiez la config sans reconstruire l'image
+      - ./assets:/app/assets:ro      # vos musiques libres de droits dans assets/music/
+    logging:
+      driver: json-file
+      options: {max-size: "10m", max-file: "5"}
+
+  # LLM local optionnel (illimité, sans clé).  Activation :
+  #   docker compose --profile ollama up -d && docker compose exec ollama ollama pull qwen2.5:7b
+  # puis dans .env : OLLAMA_HOST=http://ollama:11434
+  ollama:
+    image: ollama/ollama
+    profiles: ["ollama"]
+    restart: unless-stopped
+    volumes:
+      - ./data/ollama:/root/.ollama

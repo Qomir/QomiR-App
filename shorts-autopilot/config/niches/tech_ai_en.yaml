@@ -1,0 +1,48 @@
+# Niche recommandée n°1 : tech & IA utile, en anglais, audience US.
+label: "practical tech & AI"
+language: en                      # code Whisper
+language_name: English
+tts_lang: en-us                   # code Kokoro
+voices: [am_michael, af_heart]    # voix Kokoro ; gardez-en 1 ou 2 pour une identité de chaîne stable
+audience: "curious US adults 18-40 who use tech daily but are not engineers"
+# L'ANGLE éditorial est ce qui rend la chaîne « authentique » aux yeux de YouTube : personnalisez-le.
+angle: "Cut through the hype. For every piece of tech news, say what actually changes for a normal person, and what to do about it. Calm, precise, slightly skeptical."
+cta: "Follow for tech news that actually matters to you."
+
+timezone: America/New_York
+slots: ["07:40", "12:20", "17:50", "20:40"]   # créneaux candidats (heure locale de l'audience)
+trends_geo: US
+
+rss_feeds:
+  - https://techcrunch.com/feed/
+  - https://www.theverge.com/rss/index.xml
+  - https://feeds.arstechnica.com/arstechnica/index
+  - https://www.wired.com/feed/rss
+  - https://www.technologyreview.com/feed/
+  - https://venturebeat.com/category/ai/feed/
+subreddits: [technology, gadgets]
+
+# Catégories = ce que le système apprend à favoriser. Un sujet sans mot-clé est hors niche.
+categories:
+  ai: [" ai ", "artificial intelligence", "chatbot", "openai", "gemini", "claude", "llm", "copilot", "machine learning"]
+  phones: [iphone, android, smartphone, pixel, galaxy, ios]
+  security: [hack, breach, security, privacy, password, scam, malware, phishing]
+  apps: [app, whatsapp, instagram, youtube, tiktok, spotify, browser, chrome, update, feature]
+  hardware: [laptop, chip, nvidia, gpu, battery, headset, wearable, robot, ev]
+banned_keywords: [lawsuit, dies, death, shooting, war, election, trump, porn, suicide, layoffs]
+
+evergreen_topics:
+  security: ["How passkeys replace passwords", "What two-factor authentication really protects", "How to spot a phishing message"]
+  phones: ["What actually wears out a phone battery", "What phone storage 'Other' really is"]
+  ai: ["Why AI chatbots sometimes make things up", "What a context window is in an AI model"]
+  apps: ["What clearing your browser cache actually does"]
+
+formats: [news_explainer, list, myth_fact, how_to, deep_fact, comparison]
+fallback_visuals: ["technology abstract", "person using smartphone", "typing laptop close up", "city night lights", "data center servers"]
+forbidden_phrases: ["guaranteed", "you won't believe", "doctors hate", "100% safe"]
+
+base_hashtags: [tech, technews, ai]
+youtube_category_id: 28           # Science & Technology
+source_label: "Source:"
+ai_notice: "Made with AI assistance (synthetic voice, automated editing). Facts checked against the source above."
+disclaimer: ""

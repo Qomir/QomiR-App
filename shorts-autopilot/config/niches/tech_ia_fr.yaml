@@ -1,0 +1,46 @@
+# Variante française de la niche n°1 : tech & IA utile, audience France/francophonie.
+label: "tech et IA au quotidien"
+language: fr
+language_name: French
+tts_lang: fr-fr
+voices: [ff_siwis]                # seule voix française de Kokoro v1.0
+audience: "adultes francophones 18-40 ans, utilisateurs quotidiens de la tech mais pas ingénieurs"
+angle: "Sans jargon ni emballement : pour chaque actu tech, dire ce qui change concrètement pour une personne normale et quoi faire. Ton posé, précis, légèrement sceptique. Tutoiement."
+cta: "Abonne-toi pour la tech qui te concerne vraiment."
+
+timezone: Europe/Paris
+slots: ["07:30", "12:15", "18:30", "21:00"]
+trends_geo: FR
+
+rss_feeds:
+  - https://www.numerama.com/feed/
+  - https://www.01net.com/feed/
+  - https://www.frandroid.com/feed
+  - https://siecledigital.fr/feed/
+  - https://www.journaldugeek.com/feed/
+  - https://www.clubic.com/feed/news.rss
+subreddits: []
+
+categories:
+  ia: [" ia ", "intelligence artificielle", "chatbot", "chatgpt", "openai", "gemini", "claude", "mistral", "copilot"]
+  telephones: [iphone, android, smartphone, pixel, galaxy, ios]
+  securite: [piratage, "fuite de données", sécurité, "vie privée", "mot de passe", arnaque, malware, phishing, hameçonnage]
+  applis: [application, appli, whatsapp, instagram, youtube, tiktok, spotify, navigateur, chrome, "mise à jour"]
+  materiel: ["pc portable", puce, nvidia, batterie, casque, montre, robot, "voiture électrique"]
+banned_keywords: [procès, mort, décès, guerre, élection, suicide, porno, licenciements, attentat]
+
+evergreen_topics:
+  securite: ["Comment les passkeys remplacent les mots de passe", "Ce que protège vraiment la double authentification", "Reconnaître un message de phishing"]
+  telephones: ["Ce qui use vraiment une batterie de téléphone"]
+  ia: ["Pourquoi les IA inventent parfois des réponses"]
+  applis: ["À quoi sert vraiment de vider le cache du navigateur"]
+
+formats: [news_explainer, list, myth_fact, how_to, deep_fact, comparison]
+fallback_visuals: ["technology abstract", "person using smartphone", "typing laptop close up", "city night lights", "data center servers"]
+forbidden_phrases: ["garanti", "tu ne vas pas y croire", "100 % sûr"]
+
+base_hashtags: [tech, actutech, ia]
+youtube_category_id: 28
+source_label: "Source :"
+ai_notice: "Réalisé avec l'aide de l'IA (voix de synthèse, montage automatisé). Faits vérifiés à partir de la source ci-dessus."
+disclaimer: ""

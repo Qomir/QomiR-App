@@ -1,0 +1,44 @@
+# Niche n°2 : business & entreprises expliqués, en anglais, audience US.
+label: "business explained"
+language: en
+language_name: English
+tts_lang: en-us
+voices: [am_michael, bm_george]
+audience: "US adults 20-45 interested in how companies, careers and money decisions really work"
+angle: "Explain the business logic behind the headline: who makes money, why the company did it, and the lesson a regular person or small business owner can take from it. No hype, no hustle-culture."
+cta: "Follow for the business logic behind the headlines."
+
+timezone: America/New_York
+slots: ["07:20", "12:10", "17:40", "20:30"]
+trends_geo: US
+
+rss_feeds:
+  - https://feeds.bbci.co.uk/news/business/rss.xml
+  - https://www.cnbc.com/id/10001147/device/rss/rss.html
+  - https://fortune.com/feed/
+  - https://www.entrepreneur.com/latest.rss
+  - https://techcrunch.com/category/startups/feed/
+subreddits: [business, Entrepreneur]
+
+categories:
+  strategy: [acquisition, merger, launch, strategy, pricing, subscription, rival, competitor, expansion]
+  startups: [startup, founder, funding, "venture capital", valuation, ipo]
+  retail: [retail, store, amazon, walmart, costco, brand, restaurant, consumer]
+  work: [remote, hiring, salary, career, workplace, "four-day", productivity]
+  tech_business: [apple, google, microsoft, meta, nvidia, tesla, openai]
+banned_keywords: [lawsuit, fraud, dies, death, war, election, layoffs, bankruptcy, crypto, "get rich"]
+
+evergreen_topics:
+  retail: ["Why warehouse clubs sell some items at a loss", "How loyalty programs actually make money"]
+  strategy: ["Why companies offer free tiers", "What a loss leader is"]
+  work: ["Why meetings multiply as companies grow"]
+
+formats: [news_explainer, deep_fact, comparison, list, myth_fact]
+fallback_visuals: ["office meeting", "city skyline business", "shopping store aisle", "handshake deal", "warehouse logistics"]
+forbidden_phrases: ["guaranteed", "get rich", "passive income", "you won't believe", "secret"]
+
+base_hashtags: [business, entrepreneurship, economy]
+youtube_category_id: 27           # Education
+source_label: "Source:"
+ai_notice: "Made with AI assistance (synthetic voice, automated editing). Facts checked against the source above."
+disclaimer: "Educational content, not financial advice."

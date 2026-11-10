@@ -1,0 +1,10 @@
+.env
+.env.*
+!.env.example
+data/
+output/
+__pycache__/
+*.pyc
+.pytest_cache/
+assets/music/*
+!assets/music/.gitkeep

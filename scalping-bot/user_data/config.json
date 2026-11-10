@@ -1,0 +1,166 @@
+// ============================================================================================
+//  ScalpDip — configuration Freqtrade (Binance spot, scalping, 20 € de capital)
+//  Freqtrade accepte les commentaires // et /* */ dans ce fichier.
+//
+//  ⚠️ Les SECRETS (clés API, token Telegram, mot de passe FreqUI) ne sont PAS ici :
+//     ils viennent du fichier .env (non versionné) via les variables FREQTRADE__...
+//     ex. FREQTRADE__EXCHANGE__KEY remplace exchange.key ci-dessous.
+// ============================================================================================
+{
+    "$schema": "https://schema.freqtrade.io/schema.json",
+    "bot_name": "scalpdip",
+
+    // ---------------------------------------------------------------------------------------
+    //  SÉCURITÉ : paper trading OBLIGATOIRE au départ.
+    //  Pour passer en réel : voir CHECKLIST_REEL.md (modification MANUELLE ici + .env).
+    // ---------------------------------------------------------------------------------------
+    "dry_run": true,
+    "dry_run_wallet": 21,                  // capital simulé en USDT (≈ 20 €)
+
+    // ---------------------------------------------------------------------------------------
+    //  Capital et mise
+    // ---------------------------------------------------------------------------------------
+    "trading_mode": "spot",                // spot uniquement, aucun levier
+    "margin_mode": "",
+    "stake_currency": "USDT",
+    "max_open_trades": 2,                  // 2 trades simultanés maximum
+    // "unlimited" = la mise est recalculée à chaque trade : (capital disponible) / (slots libres)
+    // => réinvestissement automatique des gains (intérêts composés) et réduction après pertes.
+    // Avec 21 USDT : ≈ 10,3 USDT par trade (minimum Binance ≈ 5 USDT + marge Freqtrade).
+    "stake_amount": "unlimited",
+    "tradable_balance_ratio": 0.98,        // 2 % gardés de côté (arrondis, poussières)
+    "amend_last_stake_amount": true,
+    "last_stake_amount_min_ratio": 0.5,
+    "fiat_display_currency": "EUR",
+
+    // Frais utilisés en dry-run/backtest. 0.001 = 0,1 % par ordre (sans BNB).
+    // Si vous payez les frais en BNB, mettez 0.00075. En backtest on force 0.0015
+    // (0,1 % de frais + 0,05 % de slippage estimé) via l'option --fee.
+    "fee": 0.001,
+
+    // ---------------------------------------------------------------------------------------
+    //  Ordres
+    // ---------------------------------------------------------------------------------------
+    "unfilledtimeout": {                    // un ordre limite non rempli en 2 min est annulé
+        "entry": 2,
+        "exit": 2,
+        "exit_timeout_count": 0,
+        "unit": "minutes"
+    },
+    "entry_pricing": {
+        "price_side": "same",              // achat au meilleur bid (ordre limite)
+        "use_order_book": true,
+        "order_book_top": 1,
+        "price_last_balance": 0.0,
+        "check_depth_of_market": { "enabled": false, "bids_to_ask_delta": 1 }
+    },
+    "exit_pricing": {
+        "price_side": "same",              // vente au meilleur ask
+        "use_order_book": true,
+        "order_book_top": 1
+    },
+    "cancel_open_orders_on_exit": false,   // on laisse le stop-loss sur l'exchange si le bot s'arrête
+
+    // ---------------------------------------------------------------------------------------
+    //  Exchange
+    // ---------------------------------------------------------------------------------------
+    "exchange": {
+        "name": "binance",
+        "key": "",                          // -> .env : FREQTRADE__EXCHANGE__KEY
+        "secret": "",                       // -> .env : FREQTRADE__EXCHANGE__SECRET
+        "enable_ws": true,                  // bougies via websocket Binance (moins de requêtes REST)
+        "ccxt_config": { "enableRateLimit": true },
+        "ccxt_async_config": { "enableRateLimit": true, "rateLimit": 200 },
+        "markets_refresh_interval": 60,
+        "pair_whitelist": [],               // vide : la liste vient de la pairlist dynamique
+        "pair_blacklist": [
+            // Stablecoins / monnaies fiat / or tokenisé : aucun intérêt en scalping
+            "(USDC|FDUSD|TUSD|USDP|DAI|BUSD|USD1|RLUSD|XUSD|BFUSD|EUR|EURI|AEUR|PAXG|XAUT)/.*",
+            // Jetons à effet de levier et "wrapped"
+            ".*(UP|DOWN|BULL|BEAR)/.*",
+            "(WBTC|WBETH|BETH)/.*",
+            // BNB réservé au paiement des frais (le bot ne doit pas le vendre)
+            "BNB/.*"
+        ]
+    },
+
+    // ---------------------------------------------------------------------------------------
+    //  Pairlist dynamique : scanne TOUTES les paires USDT, garde les plus liquides.
+    //  Les filtres s'appliquent dans l'ordre. Rafraîchie toutes les 30 min.
+    //  (Non utilisable en backtest -> voir config.backtest.json)
+    // ---------------------------------------------------------------------------------------
+    "pairlists": [
+        {
+            "method": "VolumePairList",
+            "number_assets": 30,            // top 30 par volume 24h en USDT...
+            "sort_key": "quoteVolume",
+            "min_value": 20000000,          // ... et au moins 20 M USDT échangés sur 24h
+            "refresh_period": 1800
+        },
+        { "method": "AgeFilter", "min_days_listed": 30 },             // pas de nouveaux listings
+        {
+            "method": "PriceFilter",
+            "low_price_ratio": 0.001,       // exclut si 1 "tick" de prix > 0,1 % (prix trop bas)
+            "min_price": 0.001
+        },
+        { "method": "SpreadFilter", "max_spread_ratio": 0.001 },      // spread < 0,1 %
+        {
+            "method": "VolatilityFilter",   // assez de mouvement pour viser +0,5-1 %, mais pas fou
+            "lookback_days": 7,
+            "min_volatility": 0.02,
+            "max_volatility": 0.75,
+            "refresh_period": 86400
+        },
+        { "method": "VolumePairList", "number_assets": 15, "sort_key": "quoteVolume" }
+    ],
+
+    // ---------------------------------------------------------------------------------------
+    //  Telegram (gratuit) : chaque trade, protections, bilan quotidien, coupe-circuit.
+    //  Activé et configuré via .env (FREQTRADE__TELEGRAM__ENABLED/TOKEN/CHAT_ID).
+    // ---------------------------------------------------------------------------------------
+    "telegram": {
+        "enabled": false,
+        "token": "",
+        "chat_id": "",
+        "reload": true,
+        "balance_dust_level": 0.01,
+        "notification_settings": {
+            "status": "on",
+            "warning": "on",
+            "startup": "on",
+            "entry": "silent",
+            "entry_fill": "on",             // achat exécuté
+            "entry_cancel": "silent",
+            "exit": "silent",
+            "exit_fill": "on",              // vente exécutée (avec profit)
+            "exit_cancel": "on",
+            "protection_trigger": "on",
+            "protection_trigger_global": "on",
+            "strategy_msg": "on",           // bilan quotidien + alerte coupe-circuit
+            "show_candle": "off"
+        }
+    },
+
+    // ---------------------------------------------------------------------------------------
+    //  API / FreqUI : écoute dans le conteneur, mais docker-compose ne publie le port que sur
+    //  127.0.0.1 du serveur -> accessible UNIQUEMENT via tunnel SSH.
+    // ---------------------------------------------------------------------------------------
+    "api_server": {
+        "enabled": true,
+        "listen_ip_address": "0.0.0.0",
+        "listen_port": 8080,
+        "verbosity": "error",
+        "enable_openapi": false,
+        "CORS_origins": [],
+        "username": "freqtrader"
+        // password, jwt_secret_key, ws_token : OBLIGATOIREMENT dans .env
+        // (FREQTRADE__API_SERVER__PASSWORD / __JWT_SECRET_KEY / __WS_TOKEN)
+    },
+
+    "initial_state": "running",
+    "force_entry_enable": false,
+    "internals": {
+        "process_throttle_secs": 5,
+        "heartbeat_interval": 60
+    }
+}

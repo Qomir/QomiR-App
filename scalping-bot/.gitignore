@@ -1,0 +1,18 @@
+# Secrets
+.env
+# Données de marché, bases de trades, logs, résultats (volumineux / personnels)
+user_data/data/*
+!user_data/data/.gitkeep
+user_data/logs/*
+!user_data/logs/.gitkeep
+user_data/*.sqlite*
+user_data/backtest_results/
+user_data/hyperopt_results/
+user_data/hyperopts/
+user_data/walkforward/
+user_data/plot/
+user_data/notebooks/
+user_data/scalpdip_state.*.json
+user_data/strategies/*.json
+__pycache__/
+!.env.example

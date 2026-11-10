@@ -1,0 +1,31 @@
+# ScalpDip — Freqtrade dans Docker (image officielle multi-architecture : x86_64 ET ARM64/Oracle)
+services:
+  freqtrade:
+    image: freqtradeorg/freqtrade:stable
+    container_name: scalpdip
+    # Redémarrage automatique après un crash ou un reboot du serveur
+    # (sauf si VOUS l'arrêtez avec "docker compose stop/down").
+    restart: unless-stopped
+    # Secrets (clés API, Telegram, FreqUI) : fichier .env NON versionné
+    env_file: .env
+    environment:
+      - TZ=Europe/Paris
+    volumes:
+      - ./user_data:/freqtrade/user_data
+    # FreqUI/API publiée UNIQUEMENT sur l'interface locale du serveur.
+    # Jamais "8080:8080" seul : cela l'exposerait sur Internet.
+    ports:
+      - "127.0.0.1:8080:8080"
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    # Base de données SÉPARÉE pour le dry-run. Au passage en réel, remplacer par
+    # tradesv3.live.sqlite (voir CHECKLIST_REEL.md).
+    command: >
+      trade
+      --logfile /freqtrade/user_data/logs/freqtrade.log
+      --db-url sqlite:////freqtrade/user_data/tradesv3.dryrun.sqlite
+      --config /freqtrade/user_data/config.json
+      --strategy ScalpDip

@@ -1,0 +1,21 @@
+// Surcouche utilisée UNIQUEMENT pour télécharger les données, backtester et faire le walk-forward.
+// Elle s'ajoute à config.json : --config user_data/config.json --config user_data/config.backtest.json
+//
+// La pairlist dynamique (VolumePairList) ne fonctionne pas en backtest : on fige une liste
+// de paires très liquides. ⚠️ Biais du survivant : ces paires sont celles qui sont grosses
+// AUJOURD'HUI ; le backtest est donc probablement un peu optimiste.
+{
+    "dry_run": true,
+    "dry_run_wallet": 21,
+    "exchange": {
+        "pair_whitelist": [
+            "BTC/USDT", "ETH/USDT", "SOL/USDT", "XRP/USDT", "DOGE/USDT",
+            "ADA/USDT", "LINK/USDT", "AVAX/USDT", "SUI/USDT", "LTC/USDT",
+            "BCH/USDT", "DOT/USDT", "NEAR/USDT", "UNI/USDT", "AAVE/USDT"
+        ]
+    },
+    "pairlists": [ { "method": "StaticPairList" } ],
+    "telegram": { "enabled": false },
+    // API désactivée en backtest (mot de passe factice uniquement pour la validation du schéma)
+    "api_server": { "enabled": false, "password": "non-utilise-en-backtest" }
+}

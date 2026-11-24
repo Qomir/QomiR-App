@@ -1,0 +1,8 @@
+.env
+data/*.db
+data/*.db-journal
+output/creatives/*
+!output/creatives/.gitkeep
+output/reports/
+__pycache__/
+.pytest_cache/

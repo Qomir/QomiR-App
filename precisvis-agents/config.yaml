@@ -1,0 +1,183 @@
+# =====================================================================
+#  PrecisVis — configuration du système multi-agents
+#  Tout ce qui se règle sans toucher au code est ici.
+#  Les clés API ne vont JAMAIS ici : elles vont dans le fichier .env
+# =====================================================================
+
+# --- INTERRUPTEUR D'ARRÊT --------------------------------------------
+# true  = plus aucune publication, tous les posts programmés sont annulés,
+#         les agents ne font plus rien (seul un e-mail d'alerte part).
+kill_switch: false
+
+store:
+  name: PrecisVis
+  currency: EUR
+  timezone: Europe/Paris
+  locale: fr_FR
+  # Lien utilisé dans les textes ("lien en bio") et dans les liens trackés (UTM)
+  url: https://precisvis.fr
+  main_product_handle: tournevis-electrique-precision
+  main_product_title: Tournevis électrique de précision PrecisVis
+
+# --- PLANNING (heure de Paris) ---------------------------------------
+schedule:
+  morning: "07:00"          # veille → catalogue → visuels → textes → planning des posts → commandes → SAV → analytics
+  publish_slots: ["12:30", "18:30"]   # heures de publication organique
+  evening: "20:00"          # analytics du jour + e-mail bilan
+  research_weekday: 0       # 0 = lundi : propositions de produits complémentaires
+
+# --- IA (Claude Agent SDK) -------------------------------------------
+llm:
+  model: claude-opus-5-5
+  effort: medium            # low | medium | high
+  max_turns: 12
+
+# --- GARDE-FOUS FINANCIERS -------------------------------------------
+budgets:
+  api_daily_eur: 5.0        # plafond quotidien Claude + images + vidéos
+  api_monthly_eur: 120.0
+  usd_to_eur: 0.92          # conversion des coûts facturés en dollars
+
+# Publicité PAYANTE : désactivée. Le système ne contient aucun code qui crée
+# de campagne payante ; si "enabled" passe à true, l'orchestrateur refuse de
+# démarrer et le signale dans « À traiter ».
+paid_ads:
+  enabled: false
+  daily_budget_eur: 0
+  monthly_budget_eur: 0
+
+# --- CATALOGUE --------------------------------------------------------
+catalog:
+  purchase_price_min_eur: 20
+  purchase_price_max_eur: 60
+  shipping_delay_text: "7 à 12 jours ouvrés"
+  max_new_products_per_week: 3
+  rewrite_listing_every_days: 14
+  # Mots interdits : aucun produit beauté, jamais (comparaison mot entier, sans accents ni majuscules).
+  banned_keywords:
+    - beauté
+    - beaute
+    - beauty
+    - cosmétique
+    - cosmetique
+    - cosmetic
+    - maquillage
+    - makeup
+    - make-up
+    - manucure
+    - manicure
+    - pédicure
+    - ongle
+    - nail
+    - cil
+    - lash
+    - sourcil
+    - brow
+    - épilateur
+    - epilateur
+    - épilation
+    - epilation
+    - rasoir
+    - skincare
+    - soin du visage
+    - visage
+    - cheveux
+    - hair
+    - lisseur
+    - fer à lisser
+    - parfum
+    - massage
+    - spa
+  legal_mentions:
+    - "Garantie légale de conformité de 2 ans (articles L217-3 et suivants du Code de la consommation)."
+    - "Droit de rétractation de 14 jours à compter de la réception."
+    - "Livraison suivie en {shipping_delay}."
+
+# --- CRÉAS (agent Visuels) -------------------------------------------
+creatives:
+  image_provider: sume        # sume | fal | placeholder
+  video_provider: sume        # sume | fal | placeholder
+  fallback_provider: fal      # utilisé automatiquement si le fournisseur principal échoue
+  daily_images: 6             # concepts statiques, chacun décliné dans tous les formats
+  daily_videos: 2
+  video_seconds: 10
+  min_quality_score: 7
+  max_attempts: 3
+  max_words_on_image: 7
+  safe_zone_9x16: {top: 0.14, bottom: 0.20}
+  creative_types:
+    - packshot_atelier
+    - mise_en_situation
+    - avant_apres
+    - comparatif
+    - gros_plan_detail
+  formats:
+    - {platform: facebook,  placement: feed,    ratio: "1:1",  width: 1080, height: 1080}
+    - {platform: facebook,  placement: feed,    ratio: "4:5",  width: 1080, height: 1350}
+    - {platform: instagram, placement: feed,    ratio: "4:5",  width: 1080, height: 1350}
+    - {platform: instagram, placement: stories, ratio: "9:16", width: 1080, height: 1920}
+    - {platform: tiktok,    placement: infeed,  ratio: "9:16", width: 1080, height: 1920}
+  fal:
+    image_model: fal-ai/flux-pro/kontext
+    video_model: fal-ai/kling-video/v2.1/standard/image-to-video
+  sume:
+    image_model: openai/gpt-image-2.5
+    video_model: seedance-2.5
+  unit_costs_eur:             # estimations pour le suivi et les garde-fous
+    image: 0.06
+    video: 0.60
+
+# --- PUBLICATION ORGANIQUE -------------------------------------------
+social:
+  facebook:
+    enabled: true
+    posts_per_day: 2          # images 4:5 dans le fil de la Page
+  instagram:
+    enabled: true
+    feed_per_day: 1           # image 4:5
+    reels_per_day: 1          # vidéo 9:16
+  tiktok:
+    enabled: true
+    videos_per_day: 2
+    # Les posts photo TikTok exigent un domaine vérifié chez TikTok (PULL_FROM_URL) : désactivés par défaut.
+    photos_per_day: 0
+    # Tant que votre app TikTok n'a pas passé l'audit, l'API n'autorise que SELF_ONLY
+    privacy_level: SELF_ONLY  # passer à PUBLIC_TO_EVERYONE après l'audit TikTok
+  hashtags_max: 5
+  utm_campaign: organique
+
+# --- COMMANDES (DSers) -------------------------------------------------
+orders:
+  supplier: dsers             # dsers (surveillance) | cj (API directe, plus tard)
+  alert_unfulfilled_hours: 24
+  alert_no_tracking_days: 5
+  alert_stuck_days: 10
+
+# --- SAV ----------------------------------------------------------------
+support:
+  enabled: true
+  imap_host: imap.gmail.com
+  imap_port: 993
+  smtp_host: smtp.gmail.com
+  smtp_port: 465
+  max_emails_per_run: 30
+  auto_reply_categories: [suivi_colis, delai_livraison, utilisation_produit, retour_info]
+  escalate_categories: [remboursement, reclamation_agressive, juridique, litige_paiement]
+  min_confidence_auto_reply: 0.8
+  signature: "L'équipe PrecisVis"
+
+# --- ANALYTICS ---------------------------------------------------------
+analytics:
+  product_cost_eur: 32.0       # coût d'achat moyen du tournevis (utilisé si Shopify n'a pas le coût unitaire)
+  shipping_cost_eur: 4.5
+  shopify_fee_pct: 0.0          # frais de transaction Shopify (0 si Shopify Payments)
+  payment_fee_pct: 0.018        # Shopify Payments Europe ~1,8 %
+  payment_fee_fixed_eur: 0.25
+  winners_to_variate: 2
+
+# --- E-MAIL BILAN ------------------------------------------------------
+reporting:
+  provider: resend              # resend | smtp
+  to: qomirapp@gmail.com
+  from: "PrecisVis Agents <onboarding@resend.dev>"   # remplacer par bilan@votre-domaine une fois le domaine vérifié chez Resend
+  thumbnails_max: 8

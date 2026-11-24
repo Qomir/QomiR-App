@@ -1,0 +1,136 @@
+# PrecisVis — exécution quotidienne des agents (GitHub Actions)
+#
+# GitHub planifie en UTC et ne connaît pas l'heure d'été : chaque tâche est donc
+# déclarée deux fois (heure d'hiver et heure d'été) et le script ne s'exécute que pour
+# celle qui correspond vraiment à l'heure de Paris (--only-at-paris-hour).
+#
+#   07:00 Paris  → morning   (veille, catalogue, visuels, textes, planning, commandes, SAV, analytics)
+#   12:30 Paris  → publish   (publications organiques)
+#   18:30 Paris  → publish
+#   20:00 Paris  → evening   (analytics du jour + e-mail bilan)
+
+name: PrecisVis agents
+
+on:
+  schedule:
+    - cron: "0 6 * * *"    # 07:00 Paris (hiver)
+    - cron: "0 5 * * *"    # 07:00 Paris (été)
+    - cron: "30 11 * * *"  # 12:30 Paris (hiver)
+    - cron: "30 10 * * *"  # 12:30 Paris (été)
+    - cron: "30 17 * * *"  # 18:30 Paris (hiver)
+    - cron: "30 16 * * *"  # 18:30 Paris (été)
+    - cron: "0 19 * * *"   # 20:00 Paris (hiver)
+    - cron: "0 18 * * *"   # 20:00 Paris (été)
+  workflow_dispatch:
+    inputs:
+      phase:
+        description: "Phase à lancer"
+        type: choice
+        options: [day, morning, publish, evening]
+        default: day
+      dry_run:
+        description: "Simulation (aucune dépense, aucune publication)"
+        type: boolean
+        default: true
+      send_test_email:
+        description: "En simulation : envoyer réellement l'e-mail bilan de test"
+        type: boolean
+        default: false
+
+concurrency:
+  group: precisvis-agents
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    defaults:
+      run:
+        working-directory: precisvis-agents
+    env:
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      SHOPIFY_SHOP: ${{ secrets.SHOPIFY_SHOP }}
+      SHOPIFY_ADMIN_TOKEN: ${{ secrets.SHOPIFY_ADMIN_TOKEN }}
+      META_PAGE_ID: ${{ secrets.META_PAGE_ID }}
+      META_PAGE_TOKEN: ${{ secrets.META_PAGE_TOKEN }}
+      META_IG_USER_ID: ${{ secrets.META_IG_USER_ID }}
+      META_AD_LIBRARY_TOKEN: ${{ secrets.META_AD_LIBRARY_TOKEN }}
+      TIKTOK_CLIENT_KEY: ${{ secrets.TIKTOK_CLIENT_KEY }}
+      TIKTOK_CLIENT_SECRET: ${{ secrets.TIKTOK_CLIENT_SECRET }}
+      TIKTOK_REFRESH_TOKEN: ${{ secrets.TIKTOK_REFRESH_TOKEN }}
+      SUME_MCP_URL: ${{ secrets.SUME_MCP_URL }}
+      SUME_MCP_TOKEN: ${{ secrets.SUME_MCP_TOKEN }}
+      FAL_KEY: ${{ secrets.FAL_KEY }}
+      RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+      REPORT_SMTP_USER: ${{ secrets.REPORT_SMTP_USER }}
+      REPORT_SMTP_PASSWORD: ${{ secrets.REPORT_SMTP_PASSWORD }}
+      SUPPORT_EMAIL: ${{ secrets.SUPPORT_EMAIL }}
+      SUPPORT_EMAIL_PASSWORD: ${{ secrets.SUPPORT_EMAIL_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Choisir la phase
+        id: plan
+        shell: bash
+        run: |
+          SCHEDULE="${{ github.event.schedule }}"
+          if [ -z "$SCHEDULE" ]; then
+            ARGS="${{ inputs.phase }}"
+            [ "${{ inputs.dry_run }}" = "true" ] && ARGS="$ARGS --dry-run"
+            [ "${{ inputs.send_test_email }}" = "true" ] && ARGS="$ARGS --send-test-email"
+          else
+            UTC_HOUR=$(echo "$SCHEDULE" | awk '{print $2}')
+            case "$SCHEDULE" in
+              "0 6 * * *"|"0 5 * * *")     ARGS="morning --only-at-paris-hour 7" ;;
+              "30 11 * * *"|"30 10 * * *") ARGS="publish --only-at-paris-hour 12" ;;
+              "30 17 * * *"|"30 16 * * *") ARGS="publish --only-at-paris-hour 18" ;;
+              "0 19 * * *"|"0 18 * * *")   ARGS="evening --only-at-paris-hour 20" ;;
+            esac
+            ARGS="$ARGS --scheduled-utc-hour $UTC_HOUR"
+          fi
+          echo "args=$ARGS" >> "$GITHUB_OUTPUT"
+          echo "Arguments : $ARGS"
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: precisvis-agents/requirements.txt
+
+      - name: Installer les dépendances
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
+          pip install -r requirements.txt
+
+      # La base SQLite (journal, posts programmés, coûts du mois…) est conservée d'une exécution à l'autre.
+      - name: Restaurer la base
+        uses: actions/cache/restore@v4
+        with:
+          path: precisvis-agents/data/precisvis.db
+          key: precisvis-db-${{ github.run_id }}
+          restore-keys: precisvis-db-
+
+      - name: Lancer les agents
+        run: python main.py ${{ steps.plan.outputs.args }}
+
+      - name: Sauvegarder la base
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: precisvis-agents/data/precisvis.db
+          key: precisvis-db-${{ github.run_id }}
+
+      - name: Archiver les créas et les e-mails du jour
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: precisvis-${{ github.run_id }}
+          path: |
+            precisvis-agents/output/creatives/
+            precisvis-agents/output/reports/
+          retention-days: 14
+          if-no-files-found: ignore

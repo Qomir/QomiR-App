@@ -1,0 +1,121 @@
+{% set p = brand.palette %}<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Bilan PrecisVis {{ day }}</title></head>
+<body style="margin:0;padding:0;background:#ECE8DF;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#ECE8DF;">
+<tr><td align="center" style="padding:24px 12px;">
+<table role="presentation" width="640" cellpadding="0" cellspacing="0" style="max-width:640px;width:100%;background:{{ p.bone }};border-radius:10px;font-family:Arial,Helvetica,sans-serif;color:{{ p.charcoal }};">
+
+<tr><td style="padding:22px 28px;background:{{ p.charcoal }};border-radius:10px 10px 0 0;">
+  <div style="font-size:12px;letter-spacing:2px;color:{{ p.oak }};text-transform:uppercase;">Bilan quotidien{% if dry_run %} · simulation{% endif %}</div>
+  <div style="font-size:24px;font-weight:bold;color:{{ p.bone }};margin-top:4px;">PrecisVis — {{ day[8:10] }}/{{ day[5:7] }}/{{ day[0:4] }}</div>
+</td></tr>
+
+{% if dry_run %}<tr><td style="padding:10px 28px;background:#FFF4D6;font-size:13px;">Mode simulation : aucune dépense réelle, aucune publication, aucun e-mail client. Les chiffres sont fictifs.</td></tr>{% endif %}
+{% if kill_switch %}<tr><td style="padding:10px 28px;background:#F9DEDC;font-size:13px;color:#8C1D18;"><b>Kill switch actif</b> : toutes les publications sont annulées et les agents sont à l'arrêt.</td></tr>{% endif %}
+
+<!-- 1. Résumé -->
+<tr><td style="padding:22px 28px 6px;">
+  <h2 style="font-size:16px;margin:0 0 8px;color:{{ p.charcoal }};">1. La journée en bref</h2>
+  {% for line in summary %}<p style="margin:0 0 6px;font-size:14px;line-height:1.5;">{{ line }}</p>{% endfor %}
+</td></tr>
+
+<!-- 2. Chiffres clés -->
+<tr><td style="padding:14px 28px;">
+  <h2 style="font-size:16px;margin:0 0 8px;">2. Chiffres clés</h2>
+  <table role="presentation" width="100%" cellpadding="6" cellspacing="0" style="font-size:13px;border-collapse:collapse;">
+    <tr style="background:{{ p.charcoal }};color:{{ p.bone }};text-align:right;">
+      <th style="text-align:left;">Indicateur</th><th>Aujourd'hui</th><th>Hier</th><th>Moy. 7 j</th><th>vs hier</th><th>vs 7 j</th></tr>
+    {% for r in rows %}
+    <tr style="text-align:right;background:{{ '#FFFFFF' if loop.index is odd else p.bone }};">
+      <td style="text-align:left;">{{ r.label }}</td><td><b>{{ r.today }}</b></td><td>{{ r.yday }}</td><td>{{ r.avg7 }}</td>
+      <td>{{ r.d1 }}</td><td>{{ r.d7 }}</td></tr>
+    {% endfor %}
+  </table>
+  {% if today.by_source %}<p style="font-size:12px;color:#5f5f5c;margin:6px 0 0;">Ventes par source (UTM) :
+    {% for k, v in today.by_source.items() %}{{ k }} {{ v.orders }} ({{ v.revenue|eur }}){% if not loop.last %} · {% endif %}{% endfor %}</p>{% endif %}
+</td></tr>
+
+<!-- 3. À traiter -->
+{% if todos or failures %}
+<tr><td style="padding:14px 28px;">
+  <h2 style="font-size:16px;margin:0 0 8px;color:#8C1D18;">3. À traiter</h2>
+  {% for f in failures %}<p style="margin:0 0 6px;font-size:13px;background:#F9DEDC;padding:8px;border-radius:6px;">
+    <b>Agent en échec : {{ f.agent }}</b> — {{ f.error }}</p>{% endfor %}
+  {% for cat, items in todos.items() %}
+    <div style="font-weight:bold;font-size:13px;margin:10px 0 4px;color:{{ p.oak }};text-transform:uppercase;letter-spacing:1px;">{{ cat }} ({{ items|length }})</div>
+    {% for t in items %}<div style="font-size:13px;margin:0 0 6px;padding:8px 10px;background:#FFFFFF;border-left:3px solid {{ p.signal }};">
+      <b>{{ t.title }}</b>{% if t.details %}<br><span style="color:#4a4a47;">{{ t.details }}</span>{% endif %}</div>{% endfor %}
+  {% endfor %}
+</td></tr>
+{% endif %}
+
+<!-- 4. Agents -->
+<tr><td style="padding:14px 28px;">
+  <h2 style="font-size:16px;margin:0 0 8px;">4. Ce que chaque agent a fait</h2>
+  {% for a in agents %}
+  <div style="margin:0 0 10px;">
+    <div style="font-size:14px;font-weight:bold;">{{ a.label }}
+      <span style="font-size:11px;font-weight:normal;padding:1px 6px;border-radius:8px;
+        background:{{ '#DDEBD9' if a.status == 'ok' else ('#F9DEDC' if a.status == 'failed' else '#E6E2D9') }};">{{ a.status }}</span></div>
+    <ul style="margin:4px 0 0 18px;padding:0;font-size:13px;line-height:1.5;">{% for b in a.bullets %}<li>{{ b }}</li>{% endfor %}</ul>
+  </div>
+  {% endfor %}
+</td></tr>
+
+<!-- 5. Créas -->
+<tr><td style="padding:14px 28px;">
+  <h2 style="font-size:16px;margin:0 0 8px;">5. Créas du jour</h2>
+  {% if thumbs %}
+  <table role="presentation" cellpadding="0" cellspacing="0" width="100%"><tr>
+  {% for t in thumbs %}
+    <td width="25%" valign="top" style="padding:4px;">
+      <img src="cid:thumb-{{ t.id }}" width="135" alt="{{ t.headline }}" style="display:block;width:100%;max-width:135px;border-radius:6px;">
+      <div style="font-size:11px;margin-top:3px;">{{ '🎬 ' if t.kind == 'video' else '' }}{{ t.headline }}<br><span style="color:#6b6b67;">{{ '%.1f'|format(t.score) }}/10</span></div>
+    </td>{% if loop.index is divisibleby 4 and not loop.last %}</tr><tr>{% endif %}
+  {% endfor %}
+  </tr></table>
+  {% else %}<p style="font-size:13px;">Aucune créa validée aujourd'hui.</p>{% endif %}
+  {% if rejected %}<p style="font-size:12px;color:#6b6b67;">Rejetées : {% for c in rejected %}{{ c.id }} ({{ c.rejection_reason }}){% if not loop.last %} · {% endif %}{% endfor %}</p>{% endif %}
+  <div style="font-size:14px;font-weight:bold;margin:10px 0 4px;">Top 3 des publications actives</div>
+  {% if best_posts %}<ol style="margin:0 0 0 18px;padding:0;font-size:13px;">{% for b in best_posts %}
+    <li>{{ b.headline }} — {{ b.platform }} · {{ b.views }} vues · engagement {{ b.engagement_pct }} % · {{ b.sales }} vente(s)
+      {% if b.permalink %}<a href="{{ b.permalink }}" style="color:{{ p.oak }};">voir</a>{% endif %}</li>{% endfor %}</ol>
+  {% else %}<p style="font-size:13px;margin:0;">Pas encore de statistiques (premières publications).</p>{% endif %}
+</td></tr>
+
+<!-- 6. Publications -->
+<tr><td style="padding:14px 28px;">
+  <h2 style="font-size:16px;margin:0 0 8px;">6. Publications organiques</h2>
+  <p style="font-size:12px;margin:0 0 6px;color:#5f5f5c;">Aucune campagne payante : la publicité payante est désactivée (budget 0 €).</p>
+  {% if posts %}
+  <table role="presentation" width="100%" cellpadding="5" cellspacing="0" style="font-size:12px;border-collapse:collapse;">
+    <tr style="background:#E6E2D9;"><th align="left">Heure</th><th align="left">Plateforme</th><th align="left">Créa</th><th align="left">Statut</th><th align="left">Raison / détail</th></tr>
+    {% for x in posts %}<tr style="border-bottom:1px solid #E6E2D9;">
+      <td>{{ x.scheduled_at[11:16] }}</td><td>{{ x.platform }} {{ x.placement }}</td><td>{{ x.creative_id[-5:] }}</td>
+      <td>{{ {'queued': 'programmée', 'published': 'publiée', 'failed': 'échec', 'cancelled': 'annulée'}[x.status] }}</td>
+      <td>{{ x.error or ('créneau ' ~ x.scheduled_at[11:16]) }}</td></tr>{% endfor %}
+  </table>
+  {% else %}<p style="font-size:13px;">Aucune publication aujourd'hui.</p>{% endif %}
+</td></tr>
+
+<!-- 7. Coûts -->
+<tr><td style="padding:14px 28px;">
+  <h2 style="font-size:16px;margin:0 0 8px;">7. Coûts du système</h2>
+  <table role="presentation" width="100%" cellpadding="5" cellspacing="0" style="font-size:13px;">
+    {% for label, v in cost_rows.items() %}<tr><td>{{ label }}</td><td align="right">{{ v|eur }}</td></tr>{% endfor %}
+    <tr style="font-weight:bold;border-top:1px solid {{ p.steel }};"><td>Total du jour{% if dry_run %} (estimation simulée){% endif %}</td><td align="right">{{ cost_total|eur }} / {{ cap|eur }}</td></tr>
+    <tr><td style="color:#5f5f5c;">Cumul du mois</td><td align="right" style="color:#5f5f5c;">{{ month_total|eur }} / {{ month_cap|eur }}</td></tr>
+  </table>
+</td></tr>
+
+<!-- 8. Demain -->
+<tr><td style="padding:14px 28px 24px;">
+  <h2 style="font-size:16px;margin:0 0 8px;">8. Plan pour demain</h2>
+  <ul style="margin:0 0 0 18px;padding:0;font-size:13px;line-height:1.5;">{% for l in plan %}<li>{{ l }}</li>{% endfor %}</ul>
+</td></tr>
+
+<tr><td style="padding:14px 28px;background:#E6E2D9;border-radius:0 0 10px 10px;font-size:11px;color:#5f5f5c;">
+  Arrêt d'urgence : mettre <code>kill_switch: true</code> dans config.yaml (voir README, section « Arrêt d'urgence »).
+</td></tr>
+</table></td></tr></table></body></html>

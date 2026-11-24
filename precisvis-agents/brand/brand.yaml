@@ -1,0 +1,46 @@
+# Charte graphique PrecisVis — style « atelier »
+name: PrecisVis
+tagline: "La précision, sans forcer."
+
+palette:
+  charcoal: "#2B2B2A"     # texte principal
+  bone: "#F2EEE6"         # fond clair, panneaux de texte
+  oak: "#B08A5B"          # bois d'établi, accent chaud
+  steel: "#8E9399"        # métal brossé
+  signal: "#D9772B"       # accent CTA (avec parcimonie)
+
+typography:
+  headline_font: brand/fonts/Inter-SemiBold.otf
+  body_font: brand/fonts/Inter-Regular.otf
+  headline_size_ratio: 0.062   # taille du titre = largeur × ratio
+  max_lines: 2
+
+logo:
+  path: brand/logo.png          # PNG transparent ; placé en bas à droite
+  width_ratio: 0.18             # largeur du logo = largeur de l'image × ratio
+  margin_ratio: 0.04
+
+layout:
+  margin_ratio: 0.06            # marge de sécurité générale
+  panel_opacity: 0.82           # panneau clair derrière le texte
+
+photo_style: >
+  Photographie produit réaliste, style atelier : établi en bois de chêne patiné,
+  surfaces en métal brossé, lumière naturelle douce venant d'une fenêtre latérale,
+  tons neutres (beige, gris, bois), faible profondeur de champ, fond sobre et rangé.
+  Aucun logo de marque tierce, aucun texte généré dans l'image, aucune personne
+  identifiable. Mains réalistes avec cinq doigts si des mains apparaissent.
+
+tone_of_voice:
+  - simple, concret, chaleureux, comme un artisan qui conseille
+  - tutoiement sur TikTok, vouvoiement sur Facebook et Instagram
+  - on montre le geste et le bénéfice, pas de superlatifs
+  - jamais d'urgence artificielle, jamais de prix barré fictif, jamais de faux avis
+
+product_facts:   # SEULES caractéristiques autorisées dans les visuels et les textes — à compléter avec la fiche fournisseur
+  - tournevis électrique de précision sans fil
+  - embouts de précision interchangeables (cruciforme, plat, Torx, hexagonal, Pentalobe, Tri-wing)
+  - couple réglable sur plusieurs niveaux
+  - éclairage LED intégré
+  - batterie rechargeable par USB-C
+  - mode manuel possible pour le serrage final
